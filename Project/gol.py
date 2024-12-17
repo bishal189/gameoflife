@@ -6,7 +6,6 @@ import Project.code_base as cb
 __version__ = '1.0'
 __desc__ = "A simplified implementation of Conway's Game of Life."
 
-
 # -----------------------------------------
 # BASE IMPLEMENTATIONS
 # -----------------------------------------
@@ -87,21 +86,30 @@ def update_world(_cur_gen: dict, _world_size: tuple) -> dict:
     return next_gen
 
 
-def run_simulation(_generations: int, _population: dict, _world_size: tuple):
-    """ Runs simulation for specified amount of generations. """
-    current_gen = _population
-    for generation in range(_generations):
-        cb.clear_console()
-        for y in range(_world_size[1]):
-            for x in range(_world_size[0]):
-                cell = current_gen.get((x, y))
-                if cell is None:  # Rim cell
-                    cb.progress(cb.get_print_value(cb.STATE_RIM))
-                else:
-                    cb.progress(cb.get_print_value(cell['state']))
-            print()  # Newline after each row
-        sleep(0.2)
-        current_gen = update_world(current_gen, _world_size)
+def run_simulation(_nth_generation: int, _population: dict, _world_size: tuple, generation: int = 1):
+    """ Runs simulation for specified amount of generations recursively. """
+    if _nth_generation == 0:
+        return
+
+    # Display the current generation grid
+    cb.clear_console()
+    print(f"Generation {generation}")
+    for y in range(_world_size[1]):
+        for x in range(_world_size[0]):
+            cell = _population.get((x, y))
+            if cell is None:  # Rim cell
+                cb.progress(cb.get_print_value(cb.STATE_RIM))
+            else:
+                cb.progress(cb.get_print_value(cell['state']))
+        print()  # Newline after each row
+
+    sleep(0.2)
+
+    # Compute the next generation
+    next_population = update_world(_population, _world_size)
+
+    # Recursively call for the next generation
+    run_simulation(_nth_generation - 1, next_population, _world_size, generation + 1)
 
 
 def main():
