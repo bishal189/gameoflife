@@ -1,13 +1,19 @@
 import argparse
 import random
+import json
+from pathlib import Path
+from ast import literal_eval
 from time import sleep
+
 import Project.code_base as cb
 
 __version__ = '1.0'
 __desc__ = "A simplified implementation of Conway's Game of Life."
 
+RESOURCES = Path(__file__).parent / "../_Resources/"
+
 # -----------------------------------------
-# BASE IMPLEMENTATIONS
+# BASE AND GRADE C IMPLEMENTATIONS
 # -----------------------------------------
 
 def parse_world_size_arg(_arg: str) -> tuple:
@@ -84,6 +90,24 @@ def update_world(_cur_gen: dict, _world_size: tuple) -> dict:
             "neighbours": cell['neighbours']
         }
     return next_gen
+
+
+def load_seed_from_file(_file_name: str) -> tuple:
+    """ Load population seed from file. Returns tuple: population (dict) and world_size (tuple). """
+    file_path = RESOURCES / _file_name
+    if not file_path.suffix == ".json":
+        file_path = file_path.with_suffix(".json")
+
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            world_size = tuple(data['world_size'])
+            population = {literal_eval(k): v for k, v in data['population'].items()}
+            return population, world_size
+    except (FileNotFoundError, KeyError, ValueError) as e:
+        print(f"Error loading seed file: {e}")
+        print("Using default world size: 80x40 and randomized seed.")
+        return populate_world((80, 40)), (80, 40)
 
 
 def run_simulation(_nth_generation: int, _population: dict, _world_size: tuple, generation: int = 1):
